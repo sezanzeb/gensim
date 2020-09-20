@@ -8,6 +8,7 @@
 """
 Introduction
 ============
+
 This module implements the word2vec family of algorithms, using highly optimized C routines,
 data streaming and Pythonic interfaces.
 
@@ -24,13 +25,11 @@ See also :class:`~gensim.models.doc2vec.Doc2Vec`, :class:`~gensim.models.fasttex
 wrappers for :class:`~gensim.models.wrappers.VarEmbed` and :class:`~gensim.models.wrappers.WordRank`.
 
 The training algorithms were originally ported from the C package https://code.google.com/p/word2vec/
-and extended with additional functionality and optimizations over the years.
+and extended with additional functionality and
+`optimizations <https://rare-technologies.com/parallelizing-word2vec-in-python/>`_ over the years.
 
 For a tutorial on Gensim word2vec, with an interactive web app trained on GoogleNews,
 visit https://rare-technologies.com/word2vec-tutorial/.
-
-**Make sure you have a C compiler before installing Gensim, to use the optimized word2vec routines**
-(70x speedup compared to plain NumPy implementation, https://rare-technologies.com/parallelizing-word2vec-in-python/).
 
 Usage examples
 ==============
@@ -42,17 +41,16 @@ Initialize a model with e.g.:
     >>> from gensim.test.utils import common_texts
     >>> from gensim.models import Word2Vec
     >>>
-    >>> model = Word2Vec(common_texts, vector_size=100, window=5, min_count=1, workers=4)
+    >>> model = Word2Vec(sentences=common_texts, vector_size=100, window=5, min_count=1, workers=4)
     >>> model.save("word2vec.model")
 
 
-The training is streamed, so ``sentences`` can be an iterable, reading input data
-from disk on-the-fly. This lets you avoid loading the entire corpus into RAM.
-However, note that because the iterable must be re-startable, `sentences` must
-not be a generator. For an example of an appropriate iterator see
-:class:`~gensim.models.word2vec.BrownCorpus`,
-:class:`~gensim.models.word2vec.Text8Corpus` or
-:class:`~gensim.models.word2vec.LineSentence`.
+**The training is streamed, so ``sentences`` can be an iterable**, reading input data
+from the disk or network on-the-fly. This lets you **avoid loading your entire corpus into RAM**.
+
+Note the ``sentences`` iterable must be *restartable* (not just a generator). For some examples
+of streamed input, see :class:`~gensim.models.word2vec.BrownCorpus`,
+:class:`~gensim.models.word2vec.Text8Corpus` or :class:`~gensim.models.word2vec.LineSentence`.
 
 If you save the model you can continue training it later:
 
@@ -127,6 +125,47 @@ where "words" are actually multiword expressions, such as `new_york_times` or `f
     >>>
     >>> bigram_transformer = Phrases(common_texts)
     >>> model = Word2Vec(bigram_transformer[common_texts], min_count=1)
+
+Pretrained models
+=================
+
+Gensim comes with already pre-trained models, in the
+`Gensim-data repository <https://github.com/RaRe-Technologies/gensim-data>`_:
+
+.. sourceode:: pycon
+
+    >>> import gensim.downloader
+    >>> # Show all available models in gensim-data
+    >>> print(list(gensim.downloader.info()['models'].keys()))
+    ['fasttext-wiki-news-subwords-300',
+     'conceptnet-numberbatch-17-06-300',
+     'word2vec-ruscorpora-300',
+     'word2vec-google-news-300',
+     'glove-wiki-gigaword-50',
+     'glove-wiki-gigaword-100',
+     'glove-wiki-gigaword-200',
+     'glove-wiki-gigaword-300',
+     'glove-twitter-25',
+     'glove-twitter-50',
+     'glove-twitter-100',
+     'glove-twitter-200',
+     '__testing_word2vec-matrix-synopsis']
+    >>>
+    >>> # Download the "glove-twitter-25" embeddings
+    >>> glove_vectors = gensim.downloader.load('glove-twitter-25')
+    >>>
+    >>> # Use the downloaded vectors as usual:
+    >>> glove_vectors.most_similar('twitter')
+    [('facebook', 0.948005199432373),
+     ('tweet', 0.9403423070907593),
+     ('fb', 0.9342358708381653),
+     ('instagram', 0.9104824066162109),
+     ('chat', 0.8964964747428894),
+     ('hashtag', 0.8885937333106995),
+     ('tweets', 0.8878158330917358),
+     ('tl', 0.8778461217880249),
+     ('link', 0.8778210878372192),
+     ('internet', 0.8753897547721863)]
 
 """
 
